@@ -18,6 +18,8 @@ import termios
 import tty
 import numpy as np
 
+from decision import GetAction
+
 # record the context of global data
 gContext = {
     "playerID": -1,
@@ -77,8 +79,10 @@ class Client(object):
         packet = PacketResp().from_json(result)
 
         #数据解析
-        resp_info = json.loads(result)['data'] # {player_id : int, map : [], round : int}
-        info.update(resp_info=resp_info)
+        resp_info = json.loads(result) # {player_id : int, map : [], round : int}
+        if resp_info['type'] == 3 :
+            resp_info = resp_info['data']
+            info.update(resp_info=resp_info)
 
         return packet
 
@@ -105,7 +109,7 @@ class Client(object):
 
 def cliGetInitReq():
     """Get init request from user input."""
-    input("enter to start!")
+    # input("enter to start!")
     return InitReq(config.get("player_name"))
 
 
@@ -179,19 +183,25 @@ def termPlayAPI():
             # key = scr.getch()
             old_settings = termios.tcgetattr(sys.stdin)
             tty.setcbreak(sys.stdin.fileno())
-            key = sys.stdin.read(1)
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
             
-            if key in key2ActionReq.keys():
-                action = ActionReq(gContext["playerID"], key2ActionReq[key])
-            else:
-                action = ActionReq(gContext["playerID"], ActionType.SILENT)
-            
+
+            decision = GetAction(info)
+            action = ActionReq(gContext["playerID"], decision[0])
+
             if gContext["gameOverFlag"]:
                 break
             
             actionPacket = PacketReq(PacketType.ActionReq, action)
             client.send(actionPacket)
+
+            #第二次发送
+            action = ActionReq(gContext["playerID"], decision[1])
+            actionPacket = PacketReq(PacketType.ActionReq, action)
+            client.send(actionPacket)
+
+
+            sleep(0.1)
 
 
 if __name__ == "__main__":
