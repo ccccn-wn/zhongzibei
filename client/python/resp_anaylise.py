@@ -85,5 +85,11 @@ class Info :
             step += 1
         print(distance_map)
         return distance_map
-                    
+
+    def get_worthest_pos(self) -> tuple :
+        distance_map = self.get_distance_map()
+        available_map = np.zeros_like(distance_map)
+        # available_map[distance_map == -1] = 0
+        available_map[distance_map >= 0] = 1
+
         
