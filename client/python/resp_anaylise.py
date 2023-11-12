@@ -2,8 +2,9 @@ import json
 import numpy as np
 import copy
 
-WEIGHT_MOVABLE = 5
+WEIGHT_MOVABLE = 65536
 WEIGHT_BLOCK = 65536
+WEIGHT_BOMB = 5
 class Info :
     def __init__(self) -> None:
         self.my_id = None
@@ -51,8 +52,8 @@ class Info :
 
         self.map_info = new_map_info
         self.blockarea = self.map_info[:,:,0:3].sum(axis = 2)
-        # self.weightmap = self.blockarea * WEIGHT_BLOCK + self.map_info[:,:,2] * WEIGHT_MOVABLE
-        # self.weightmap[self.my_status['x'],self.my_status['y']] = 0
+        self.weightmap = self.blockarea * WEIGHT_BLOCK + self.get_danger_map() * 5 + 1
+        self.weightmap[self.my_status['x'],self.my_status['y']] = 0
         self.blocklist = self.generate_blocklist()
         self.get_distance_map()
 
@@ -181,6 +182,9 @@ class Info :
         # #距离加权
         # worth_map *= get_weight(available_map)
         self.worthest_pos = np.unravel_index(np.argmax(worth_map, axis=None), worth_map.shape)
+        # print(self.worthest_pos)
+        # print(self.worthest_pos)
+        # print(self.worthest_pos)
         return self.worthest_pos
 
 

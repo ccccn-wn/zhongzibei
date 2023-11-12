@@ -21,20 +21,22 @@ class Map(object):
                 yield (x_cell, y_cell)
 
 class Node(object):
-    def __init__(self, pos):
+    def __init__(self, pos,weight):
         self.pos = pos
         self.father = None
         self.gvalue = 0
         self.fvalue = 0
+        self.weight = weight
 
     def compute_fx(self, enode, father):
 
         gx_father = father.gvalue
         #采用欧式距离计算父节点到当前节点的距离
-        gx_f2n = math.sqrt((father.pos[0] - self.pos[0])**2 + (father.pos[1] - self.pos[1])**2)
+        # gx_f2n = abs(father.pos[0] - self.pos[0]) + abs(father.pos[1] - self.pos[1])
+        gx_f2n = self.weight
         gvalue = gx_f2n + gx_father
 
-        hx_n2enode = math.sqrt((self.pos[0] - enode.pos[0])**2 + (self.pos[1] - enode.pos[1])**2)
+        hx_n2enode = abs(self.pos[0] - enode.pos[0]) + abs(self.pos[1] - enode.pos[1])
         fvalue = gvalue + hx_n2enode
         return gvalue, fvalue
 
@@ -54,10 +56,11 @@ class AStar(object):
         self.openlist, self.closelist = [], []
 
         self.blocklist = info.blocklist
+        self.weightmap = info.weightmap
 
-        self.snode = Node((info.my_status['x'], info.my_status['y'])) #用于存储路径规划的起始节点
+        self.snode = Node((info.my_status['x'], info.my_status['y']),self.weightmap[info.my_status['x']][info.my_status['y']]) #用于存储路径规划的起始节点
 
-        self.enode = Node(tar_pos) #用于存储路径规划的目标节点
+        self.enode = Node(tar_pos,self.weightmap[tar_pos[0]][tar_pos[1]]) #用于存储路径规划的目标节点
         self.cnode = self.snode   #用于存储当前搜索到的节点
 
         
@@ -118,9 +121,9 @@ class AStar(object):
             x_new, y_new = x + os[0], y + os[1]
             pos_new = (x_new, y_new)
             #判断是否在地图范围内,超出范围跳过
-            if x_new < 0 or x_new > self.mapsize[0] - 1 or y_new < 0 or y_new > self.mapsize[1]:
+            if x_new < 0 or x_new > self.mapsize[0] - 1 or y_new < 0 or y_new > self.mapsize[1] - 1:
                 continue
-            nodes_neighbor.append(Node(pos_new))
+            nodes_neighbor.append(Node(pos_new,self.weightmap[pos_new[0]][pos_new[1]]))
 
         return nodes_neighbor
 

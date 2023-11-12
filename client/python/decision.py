@@ -38,6 +38,7 @@ def GetAction(info:Info) ->ActionType :
         SecondAction = ActionType.PLACED
     elif myAstar.run() == 1:
         routelist = myAstar.get_minroute()
+        print(routelist)
         dirlist = Get_Dir(routelist)
         if len(dirlist) == 1 :
             nextdir = dirlist[0]

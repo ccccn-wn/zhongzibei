@@ -200,13 +200,15 @@ def termPlayAPI():
             actionPacket = PacketReq(PacketType.ActionReq, action)
             client.send(actionPacket)
 
+            sleep(0.04)
+
             #第二次发送
             action = ActionReq(gContext["playerID"], decision[1])
             actionPacket = PacketReq(PacketType.ActionReq, action)
             client.send(actionPacket)
 
 
-            sleep(0.05)
+            sleep(0.1)
 
 
 if __name__ == "__main__":
