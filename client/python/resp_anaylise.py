@@ -47,9 +47,10 @@ class Info :
 
         self.map_info = new_map_info
         self.blockarea = self.map_info[:,:,0:2].sum(axis = 2)
-        self.weightmap = self.blockarea * WEIGHT_BLOCK + self.map_info[:,:,2] * WEIGHT_MOVABLE
+        self.weightmap = self.blockarea * WEIGHT_BLOCK + self.map_info[:,:,2] * WEIGHT_MOVABLE + 1
         self.weightmap[self.my_status['x'],self.my_status['y']] = 0
         self.blocklist = self.generate_blocklist()
+
         self.get_distance_map()
 
     def generate_blocklist(self):

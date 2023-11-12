@@ -38,7 +38,7 @@ def GetAction(info:Info) ->ActionType :
         nextaction = Dir2ActionType[nextdir[0]][nextdir[1]]
 
 
-        # print(dirlist)
+        print(routelist)
 
     else:
         FirstAction = ActionType.SILENT
