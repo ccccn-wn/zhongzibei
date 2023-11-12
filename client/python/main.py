@@ -189,7 +189,7 @@ def termPlayAPI():
             #等待接受一帧数据
             while(info.is_new_frame() == False) :
                 if gContext["gameOverFlag"]:
-                    break
+                      break
                 continue
 
             decision = GetAction(info)
