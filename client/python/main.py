@@ -127,7 +127,7 @@ def recvAndRefresh(ui: UI, info : Info, client: Client):
     while resp.type != PacketType.GameOver:
         subprocess.run(["clear"])
         ui.refresh(resp.data)
-        ui.display()
+        ui.display(info)
         resp = client.recv(info)
 
     print(f"Game Over!")

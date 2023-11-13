@@ -3,7 +3,7 @@ from resp import *
 from enum import Enum
 from random import choice as random_choice
 from config import config
-
+from resp_anaylise import Info
 class Emoji(Enum):
     """Kawaii emojis!"""
     # Bricks
@@ -118,7 +118,7 @@ class UI(object):
         self._player: Player = None
         self._block = [[Block() for _ in range(range_x)] for __ in range(range_y)]
 
-    def display(self) -> None:
+    def display(self,info:Info) -> None:
         if self._player is not None:
             print(
                 f"playerID: {self._player.player_id}, "\
@@ -136,7 +136,7 @@ class UI(object):
             for block in block_row:
                 print(block.emoji, end='')
             print('')
-
+        info.Print_BombGrids()
     def refresh(self, actionResp: ActionResp) -> None:
         for map in actionResp.map:
             freshed = False

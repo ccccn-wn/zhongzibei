@@ -5,6 +5,24 @@ import copy
 WEIGHT_MOVABLE = 65536
 WEIGHT_BLOCK = 65536
 WEIGHT_BOMB = 5
+
+class BombGrid():
+    '''计算炸弹属性'''
+    def __init__(self,x,y) -> None:
+        self.ttl = 5 
+        self.x = x
+        self.y = y
+    
+    def update(self):
+        if self.ttl > 0 :
+            self.ttl -= 1
+        
+    def is_alive(self):
+        if self.ttl <= 0:
+            return False
+        else:
+            return True
+        
 class Info :
     def __init__(self) -> None:
         self.my_id = None
@@ -16,6 +34,11 @@ class Info :
         self.blockarea = np.zeros((15,15), dtype=np.int64)
         self.weightmap = np.zeros((15,15), dtype=np.int64)
         self.blocklist = []
+        self.bomb_round = np.zeros((15,15), dtype=np.int64) - 1
+
+
+        self.BombGrids = []
+
         self.new_frame = False
     def update(self, resp_info : dict) -> None :
         self.my_id = resp_info['player_id']
@@ -44,11 +67,15 @@ class Info :
                         self.enemy_id = player_status['player_id']
                         self.enemy_status['x'] = block['x']
                         self.enemy_status['y'] = block['y']
+
             new_map_info[block['x'], block['y'],0] = is_Bomb
             new_map_info[block['x'], block['y'],1] = is_Block
             new_map_info[block['x'], block['y'],2] = is_MoveBlock
             new_map_info[block['x'], block['y'],3] = is_Item
             new_map_info[block['x'], block['y'],4] = Bomb_range
+
+        self.BombGridUpdate(is_Bomb,block)#计算炸弹的剩余爆炸回合
+
 
         self.map_info = new_map_info
         self.blockarea = self.map_info[:,:,0:3].sum(axis = 2)
@@ -56,8 +83,8 @@ class Info :
         self.weightmap[self.my_status['x'],self.my_status['y']] = 0
         self.blocklist = self.generate_blocklist()
         self.get_distance_map()
-
         self.new_frame = True
+    
 
     def is_new_frame(self) :
         if self.new_frame == True :
@@ -103,7 +130,7 @@ class Info :
     def get_danger_map(self) -> np.ndarray :
         danger_map = np.zeros((15,15))
         block_map = self.map_info[:,:,1]
-        bomb_poses = np.where(self.map_info[:,:,4] != 0)
+        bomb_poses = np.where(self.map_info[:,:,4] != 0)#找到炸弹位置
         bomb_poses = zip(bomb_poses[0], bomb_poses[1])
         for bomb_pos in bomb_poses :
             danger_map[bomb_pos] = 1
@@ -133,6 +160,13 @@ class Info :
                     danger_map[dst_point] = 1
                 else :
                     break
+            # rest_round = self.bomb_round[bomb_pos]
+
+
+        # for pass_x,pass_y in route:
+        #     if danger_map[pass_x,pass_y] != 0 :
+                
+
         return danger_map
 
     def get_worthest_pos(self, danger_map = None) -> tuple :
@@ -186,6 +220,31 @@ class Info :
         # print(self.worthest_pos)
         # print(self.worthest_pos)
         return self.worthest_pos
+    def BombGridUpdate(self,is_Bomb,block):
+        '''计算炸弹的剩余回合'''
+        if is_Bomb == 1:
+            bombgrid = (block['x'], block['y'])
+            if not bombgrid in self.BombGrids:
+                self.BombGrids.append(bombgrid)            
+                self.bomb_round[bombgrid[0]][bombgrid[1]] = 6
+            else:
+                # if self.bomb_round[bombgrid[0]][bombgrid[1]] == -1 : #如果爆炸回合为6的话
+                #     self.bomb_round[bombgrid[0]][bombgrid[1]] = 0
+                # else: 
+                    self.bomb_round[bombgrid[0]][bombgrid[1]] -= 1
+        else:
+            bombgrid = (block['x'], block['y'])
+            self.bomb_round[bombgrid[0]][bombgrid[1]] = -1
+
+        for bombgrid in self.BombGrids:
+            if self.bomb_round[bombgrid[0]][bombgrid[1]] == -1:
+                self.BombGrids.remove(bombgrid)
+
+    def Print_BombGrids(self):
+        for bombgrids in self.BombGrids:
+            print(str(bombgrids) + ' round: ' + str(self.bomb_round[bombgrids[0]][bombgrids[1]]) + '\n')
+
+
 
 
 
